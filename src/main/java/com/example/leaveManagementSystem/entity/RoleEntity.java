@@ -1,5 +1,6 @@
 package com.example.leaveManagementSystem.entity;
 
+import com.example.leaveManagementSystem.enumeration.EnumStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,8 +31,9 @@ public class RoleEntity {
         @JoinColumn(name = "tenant_id", nullable = false)
         private TenantEntity tenantId;
 
-        @Column(name = "status",nullable = false, length = 20)
-        private String status;
+        @Enumerated(EnumType.STRING) // Ensures it's stored as a string in DB
+        @Column(name = "status")
+        private EnumStatus status;
 
         @Column(name="created_by",nullable = false, length = 50, updatable = false)
         private String createdBy;

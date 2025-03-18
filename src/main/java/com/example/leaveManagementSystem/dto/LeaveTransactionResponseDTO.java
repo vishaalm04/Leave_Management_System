@@ -2,6 +2,8 @@ package com.example.leaveManagementSystem.dto;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -29,6 +31,10 @@ public class LeaveTransactionResponseDTO {
     private String remarks;
     private String createdBy;
     private String createdAt;
+
+    private List<ApproveWorkflowResponseDTO> workflows;
+
+
 
 
 

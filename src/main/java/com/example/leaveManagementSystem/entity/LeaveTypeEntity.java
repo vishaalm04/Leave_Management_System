@@ -1,5 +1,6 @@
 package com.example.leaveManagementSystem.entity;
 
+import com.example.leaveManagementSystem.enumeration.EnumStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +19,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-
 public class LeaveTypeEntity {
 
         @Id
@@ -38,9 +38,9 @@ public class LeaveTypeEntity {
         @JoinColumn(name = "tenant_id", nullable = false)
         private TenantEntity tenantEntity;
 
-        @Column(name="status",nullable = false, length = 20)
-        private String status;
-
+        @Enumerated(EnumType.STRING) // Ensures it's stored as a string in DB
+        @Column(name = "status")
+        private EnumStatus status;
         @Column(name="created_by",nullable = false, length = 50, updatable = false)
         private String createdBy;
 
@@ -54,5 +54,6 @@ public class LeaveTypeEntity {
         @LastModifiedDate
         @Column(name="updated_at",nullable = false)
          private LocalDateTime updatedAt;
+
 
 }

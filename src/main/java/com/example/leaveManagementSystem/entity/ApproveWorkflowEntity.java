@@ -22,7 +22,7 @@ public class ApproveWorkflowEntity {
 
     @ManyToOne
     @JoinColumn(name = "tenant_id", nullable = false)
-    private TenantEntity tenantId;  // Reference to Tenant Entity
+    private TenantEntity tenantId;
 
     @ManyToOne
     @JoinColumn(name = "leave_transaction_id", nullable = false, referencedColumnName = "id")

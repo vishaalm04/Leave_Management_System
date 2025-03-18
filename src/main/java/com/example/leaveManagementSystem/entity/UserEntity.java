@@ -1,5 +1,6 @@
 package com.example.leaveManagementSystem.entity;
 
+import com.example.leaveManagementSystem.enumeration.EnumStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -45,8 +46,9 @@ public class UserEntity {
         @Column(name = "unique_code",nullable = false, unique = true, length = 25)
         private String uniqueCode;
 
-        @Column(name = "status",nullable = false, length = 20)
-        private String status;
+        @Enumerated(EnumType.STRING) // Ensures it's stored as a string in DB
+        @Column(name = "status")
+        private EnumStatus status;
 
         @Column(name = "created_by",nullable = false, length = 50, updatable = false)
         private String createdBy;
@@ -54,9 +56,9 @@ public class UserEntity {
         @Column(name = "updated_by",nullable = false, length = 25)
         private String updatedBy;
 
-        @ManyToOne
+        @ManyToOne(fetch = FetchType.EAGER)
         @JoinColumn(name = "approver_id")
-        private UserEntity  approver;
+        private UserEntity approver;
 
         @ManyToOne
         @JoinColumn(name = "reviewer_id")

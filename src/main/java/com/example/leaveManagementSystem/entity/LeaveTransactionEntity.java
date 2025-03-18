@@ -2,6 +2,7 @@ package com.example.leaveManagementSystem.entity;
 
 import com.example.leaveManagementSystem.enumeration.EnumLeaveDuration;
 import com.example.leaveManagementSystem.enumeration.EnumLeaveStatus;
+import com.example.leaveManagementSystem.enumeration.EnumStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "leave_transaction")
@@ -32,11 +34,11 @@ public class LeaveTransactionEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity userId;
+    private UserEntity user;
 
     @ManyToOne
     @JoinColumn(name = "leave_type_id", nullable = false)
-    private LeaveTypeEntity leaveTypeId;
+    private LeaveTypeEntity leaveType;
 
     @Column(name = "remarks",columnDefinition = "TEXT")
     private String remarks;
@@ -71,8 +73,9 @@ public class LeaveTransactionEntity {
     @Column(name = "leave_status",nullable = false, length = 20)
     private EnumLeaveStatus leaveStatus;
 
-    @Column(name = "status",nullable = false, length = 20)
-    private String status;
+//    @Enumerated(EnumType.STRING) // Ensures it's stored as a string in DB
+//    @Column(name = "status")
+//    private EnumStatus status;
 
     @Column(name = "created_by",nullable = false, length = 50, updatable = false)
     private String createdBy;
@@ -87,6 +90,13 @@ public class LeaveTransactionEntity {
     @LastModifiedDate
     @Column(name = "updated_at",nullable = false)
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "leaveTransactionId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ApproveWorkflowEntity> approveWorkflows;
+
+
+
+
 
 
 }

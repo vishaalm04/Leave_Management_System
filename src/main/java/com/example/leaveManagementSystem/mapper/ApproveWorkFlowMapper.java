@@ -1,5 +1,6 @@
 package com.example.leaveManagementSystem.mapper;
 
+import com.example.leaveManagementSystem.dto.ApproveWorkflowResponseDTO;
 import com.example.leaveManagementSystem.dto.LeaveTransactionRequestDTO;
 import com.example.leaveManagementSystem.dto.LeaveTransactionResponseDTO;
 import com.example.leaveManagementSystem.entity.ApproveWorkflowEntity;
@@ -33,12 +34,19 @@ public class ApproveWorkFlowMapper {
         return entity;
     }
 
-    public LeaveTransactionResponseDTO toResponseDTO(ApproveWorkflowEntity entity) {
+    public ApproveWorkflowResponseDTO toResponseDTO(ApproveWorkflowEntity entity) {
         if (entity == null) {
             return null;
         }
-
-        return null;
+        return ApproveWorkflowResponseDTO.builder()
+                .id(entity.getId())
+                .approverId(entity.getApprover().getId())
+                .approverName(entity.getApprover().getName())
+                .workflowStatus(String.valueOf(entity.getWorkflowStatus()))
+                .remarks(entity.getRemarks())
+                .createdBy(entity.getCreatedBy())
+                .createdAt(String.valueOf(entity.getCreatedAt()))
+                .build();
     }
 
 }
