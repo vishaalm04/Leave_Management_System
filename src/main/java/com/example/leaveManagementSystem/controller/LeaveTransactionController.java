@@ -1,12 +1,8 @@
 package com.example.leaveManagementSystem.controller;
 
-import com.example.leaveManagementSystem.dto.ApiResponseDTO;
-import com.example.leaveManagementSystem.dto.LeaveTransactionRequestDTO;
-import com.example.leaveManagementSystem.dto.LeaveTransactionResponseDTO;
-import com.example.leaveManagementSystem.dto.LeaveTransactionUpdateDTO;
+import com.example.leaveManagementSystem.dto.*;
 import com.example.leaveManagementSystem.exception.InvalidDataException;
 import com.example.leaveManagementSystem.exception.UserNotFoundException;
-import com.example.leaveManagementSystem.service.EmailService;
 import com.example.leaveManagementSystem.service.LeaveTransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name="leaveTransactionController",description = "Leave Request Api")
+@Tag(name = "leaveTransactionController", description = "Leave Request Api")
 @RestController
 @RequestMapping("/leave")
 public class LeaveTransactionController {
@@ -40,17 +36,17 @@ public class LeaveTransactionController {
     }
 
     @GetMapping("/{transactionId}")
-    public LeaveTransactionResponseDTO getLeaveTransactionDetails( @RequestHeader("userId") Long userId,
-                                                                   @RequestHeader("tenantId") Long tenant_Id,
-                                                                    @PathVariable String transactionId){
-        return leaveTransactionService.getLeaveTransactionsByUserId(userId,tenant_Id, Long.valueOf(transactionId));
+    public LeaveTransactionResponseDTO getLeaveTransactionDetails(@RequestHeader("userId") Long userId,
+                                                                  @RequestHeader("tenantId") Long tenant_Id,
+                                                                  @PathVariable String transactionId) {
+        return leaveTransactionService.getLeaveTransactionsByUserId(userId, tenant_Id, Long.valueOf(transactionId));
     }
 
     @DeleteMapping("/{transactionId}")
     public ApiResponseDTO cancelLeave(@RequestHeader("userId") Long userId,
                                       @RequestHeader("tenantId") Long tenant_Id,
                                       @PathVariable Long transactionId) throws UserNotFoundException {
-        return leaveTransactionService.cancelLeave(userId,tenant_Id,transactionId);
+        return leaveTransactionService.cancelLeave(userId, tenant_Id, transactionId);
     }
 
     @PutMapping("/{transactionId}")
@@ -58,12 +54,14 @@ public class LeaveTransactionController {
                                       @RequestHeader("userId") Long userId,
                                       @RequestHeader("tenantId") Long tenant_Id,
                                       @PathVariable Long transactionId) throws UserNotFoundException, InvalidDataException {
-        return leaveTransactionService.updateLeave(leaveTransactionUpdateDTO, userId,tenant_Id, transactionId);
+        return leaveTransactionService.updateLeave(leaveTransactionUpdateDTO, userId, tenant_Id, transactionId);
     }
 
     @GetMapping("/list")
-    public List<LeaveTransactionResponseDTO> getLeaveTransactionsListByUserId(@RequestHeader Long userId) throws UserNotFoundException {
-        return leaveTransactionService.getLeaveTransactionsListByUserId(userId);
+    public List<LeaveTransactionResponseWithoutWorkflowDTO> getLeaveTransactionsListByUserId(@RequestHeader(required = true)Long tenantId,
+                                                                                             @RequestHeader(required = false) Long userId,
+                                                                                             @RequestHeader(required = false) Long approverId) throws UserNotFoundException, InvalidDataException {
+        return leaveTransactionService.getLeaveTransactionsListByUserId(tenantId,userId, approverId);
     }
 
 }

@@ -57,7 +57,7 @@ public class UserEntity {
         private String updatedBy;
 
         @ManyToOne(fetch = FetchType.EAGER)
-        @JoinColumn(name = "approver_id")
+        @JoinColumn(name = "appraiser_id")
         private UserEntity approver;
 
         @ManyToOne

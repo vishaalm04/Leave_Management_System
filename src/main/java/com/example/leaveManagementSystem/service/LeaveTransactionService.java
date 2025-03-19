@@ -1,9 +1,6 @@
 package com.example.leaveManagementSystem.service;
 
-import com.example.leaveManagementSystem.dto.ApiResponseDTO;
-import com.example.leaveManagementSystem.dto.LeaveTransactionRequestDTO;
-import com.example.leaveManagementSystem.dto.LeaveTransactionResponseDTO;
-import com.example.leaveManagementSystem.dto.LeaveTransactionUpdateDTO;
+import com.example.leaveManagementSystem.dto.*;
 import com.example.leaveManagementSystem.exception.InvalidDataException;
 import com.example.leaveManagementSystem.exception.UserNotFoundException;
 
@@ -19,6 +16,6 @@ public interface LeaveTransactionService {
 
     ApiResponseDTO updateLeave(LeaveTransactionUpdateDTO leaveTransactionUpdateDTO , Long userId, Long tenant_Id, Long transactionId) throws UserNotFoundException, InvalidDataException;
 
-    List<LeaveTransactionResponseDTO> getLeaveTransactionsListByUserId(Long userId) throws UserNotFoundException;
+    List<LeaveTransactionResponseWithoutWorkflowDTO> getLeaveTransactionsListByUserId(Long tenantId,Long userId, Long approverId) throws UserNotFoundException, InvalidDataException;
 
 }

@@ -1,10 +1,7 @@
 package com.example.leaveManagementSystem.service.impl;
 
 import com.example.leaveManagementSystem.constants.ResponseConstants;
-import com.example.leaveManagementSystem.dto.ApiResponseDTO;
-import com.example.leaveManagementSystem.dto.LeaveTransactionRequestDTO;
-import com.example.leaveManagementSystem.dto.LeaveTransactionResponseDTO;
-import com.example.leaveManagementSystem.dto.LeaveTransactionUpdateDTO;
+import com.example.leaveManagementSystem.dto.*;
 import com.example.leaveManagementSystem.entity.*;
 import com.example.leaveManagementSystem.enumeration.EnumLeaveDuration;
 import com.example.leaveManagementSystem.enumeration.EnumLeaveStatus;
@@ -64,30 +61,17 @@ public class LeaveTransactionServiceImpl implements LeaveTransactionService {
         TenantEntity tenantEntity = leaveTransactionValidator.validateTenant(tenantId);
         LeaveTypeEntity leaveType = leaveTransactionValidator.validateLeaveType(leaveTransactionRequestDTO.getLeaveTypeId());
 
+        leaveTransactionValidator.validateLeaveDates(leaveTransactionRequestDTO.getStartDate(), leaveTransactionRequestDTO.getEndDate());
+
         LocalDate startDate = LocalDate.parse(leaveTransactionRequestDTO.getStartDate());
         LocalDate endDate = LocalDate.parse(leaveTransactionRequestDTO.getEndDate());
 
         EnumLeaveDuration startDateType = EnumLeaveDuration.valueOf(leaveTransactionRequestDTO.getAppliedStartDateType());
         EnumLeaveDuration endDateType = EnumLeaveDuration.valueOf(leaveTransactionRequestDTO.getAppliedEndDateType());
 
-        leaveTransactionValidator.validateLeaveDates(leaveTransactionRequestDTO.getStartDate(), leaveTransactionRequestDTO.getEndDate());
-        leaveTransactionValidator.validateDuplicateLeave(user, leaveType, startDate,startDateType,endDate,endDateType);
-        leaveTransactionValidator.validateLeaveDuration(leaveTransactionRequestDTO.getAppliedStartDateType(),leaveTransactionRequestDTO.getAppliedEndDateType());
+        leaveTransactionValidator.validateDuplicateLeave(user, leaveType, startDate, startDateType, endDate, endDateType);
+        leaveTransactionValidator.validateLeaveDuration(leaveTransactionRequestDTO.getAppliedStartDateType(), leaveTransactionRequestDTO.getAppliedEndDateType());
 
-//        LeaveTransactionEntity leaveTransactionEntity = new LeaveTransactionEntity();
-//        leaveTransactionEntity.setTenantId(tenantId);
-//        leaveTransactionEntity.setUser(user);
-//        leaveTransactionEntity.setLeaveType(leaveType);
-//        leaveTransactionEntity.setApprover(!leaveType.getIsApprover() && leaveType.getIsReviewer() ? user.getReviewer() : user.getApprover());
-//        leaveTransactionEntity.setStartDate(startDate);
-//        leaveTransactionEntity.setAppliedStartDateType(EnumLeaveDuration.valueOf(leaveTransactionRequestDTO.getAppliedStartDateType()));
-//        leaveTransactionEntity.setEndDate(endDate);
-//        leaveTransactionEntity.setAppliedEndDateType(EnumLeaveDuration.valueOf(leaveTransactionRequestDTO.getAppliedEndDateType()));
-//        leaveTransactionEntity.setRemarks(leaveTransactionRequestDTO.getRemarks());
-//        leaveTransactionEntity.setLeaveStatus(EnumLeaveStatus.PENDING);
-//        leaveTransactionEntity.setCreatedBy(user.getName());
-
-       // emailService.sendLeaveAppliedEmail(userId,leaveTransactionRequestDTO.getStartDate(), leaveTransactionRequestDTO.getEndDate());
         LeaveTransactionEntity leaveTransactionEntity =
                 leaveTransactionMapper.toEntity(leaveTransactionRequestDTO, user, leaveType, tenantId, startDate, endDate);
         leaveTransactionEntity = leaveTransactionRepository.save(leaveTransactionEntity);
@@ -109,12 +93,12 @@ public class LeaveTransactionServiceImpl implements LeaveTransactionService {
         approveWorkflowRepository.saveAll(approveWorkflowEntities);
 
         // Send email before processing the leave application
-       // emailService.sendLeaveAppliedEmail(user, leaveTransactionRequestDTO.getStartDate(), leaveTransactionRequestDTO.getEndDate());
+        // emailService.sendLeaveAppliedEmail(user, leaveTransactionRequestDTO.getStartDate(), leaveTransactionRequestDTO.getEndDate());
         return new ApiResponseDTO(HttpStatus.OK.value(), ResponseConstants.LEAVE_APPLIED);
     }
 
     @Override
-    public LeaveTransactionResponseDTO getLeaveTransactionsByUserId(Long userId,Long tenant_Id,Long transactionId) {
+    public LeaveTransactionResponseDTO getLeaveTransactionsByUserId(Long userId, Long tenant_Id, Long transactionId) {
         UserEntity user = userRepository.findByIdAndStatus(userId, EnumStatus.ACTIVE)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
@@ -129,7 +113,7 @@ public class LeaveTransactionServiceImpl implements LeaveTransactionService {
     }
 
     @Override
-    public ApiResponseDTO cancelLeave(Long userId,Long tenant_Id, Long transactionId) throws UserNotFoundException {
+    public ApiResponseDTO cancelLeave(Long userId, Long tenant_Id, Long transactionId) throws UserNotFoundException {
         // Validate user
         UserEntity user = leaveTransactionValidator.validateUser(userId);
 
@@ -170,6 +154,7 @@ public class LeaveTransactionServiceImpl implements LeaveTransactionService {
     public ApiResponseDTO updateLeave(LeaveTransactionUpdateDTO leaveTransactionUpdateDTO, Long userId, Long tenantId, Long transactionId) throws UserNotFoundException, InvalidDataException {
 
         UserEntity user = leaveTransactionValidator.validateUser(userId);
+        TenantEntity tenantEntity = leaveTransactionValidator.validateTenant(tenantId);
 
         Optional<LeaveTransactionEntity> leaveTransactionOpt = leaveTransactionRepository.findById(transactionId);
 
@@ -183,27 +168,84 @@ public class LeaveTransactionServiceImpl implements LeaveTransactionService {
         if (!leaveTransaction.getUser().getId().equals(user.getId())) {
             return new ApiResponseDTO(HttpStatus.FORBIDDEN.value(), "Unauthorized to update this leave");
         }
+        if (!leaveTransaction.getTenantId().equals(tenantEntity.getId())) {
+            return new ApiResponseDTO(HttpStatus.FORBIDDEN.value(), "Unauthorized to update this leave");
+        }
 
         if (!leaveTransaction.getLeaveStatus().equals(EnumLeaveStatus.PENDING)) {
             return new ApiResponseDTO(HttpStatus.BAD_REQUEST.value(), "Leave Status can't be updated");
         }
 
+        if (leaveTransactionUpdateDTO.getLeaveStatus() != null &&
+                leaveTransactionUpdateDTO.getLeaveStatus().equalsIgnoreCase("CANCELLED")) {
+
+            leaveTransaction.setLeaveStatus(EnumLeaveStatus.CANCELLED);
+            leaveTransactionRepository.save(leaveTransaction);
+            return new ApiResponseDTO(HttpStatus.OK.value(), "Leave request has been cancelled.");
+        }
+
+        if (leaveTransactionUpdateDTO.getStartDate() != null) {
             leaveTransactionValidator.validateLeaveDates(leaveTransactionUpdateDTO.getStartDate(), leaveTransactionUpdateDTO.getEndDate());
             leaveTransaction.setStartDate(LocalDate.parse(leaveTransactionUpdateDTO.getStartDate()));
+        }
+
+        if (leaveTransactionUpdateDTO.getEndDate() != null) {
+            leaveTransactionValidator.validateLeaveDates(leaveTransactionUpdateDTO.getStartDate(), leaveTransactionUpdateDTO.getEndDate());
             leaveTransaction.setEndDate(LocalDate.parse(leaveTransactionUpdateDTO.getEndDate()));
-            leaveTransaction.setAppliedStartDateType(EnumLeaveDuration.valueOf(leaveTransactionUpdateDTO.getAppliedEndDateType()));
+        }
+
+        if (leaveTransactionUpdateDTO.getAppliedStartDateType() != null) {
+            leaveTransaction.setAppliedStartDateType(EnumLeaveDuration.valueOf(leaveTransactionUpdateDTO.getAppliedStartDateType()));
+        }
+
+        if (leaveTransactionUpdateDTO.getAppliedEndDateType() != null) {
             leaveTransaction.setAppliedEndDateType(EnumLeaveDuration.valueOf(leaveTransactionUpdateDTO.getAppliedEndDateType()));
-            leaveTransactionRepository.save(leaveTransaction);
-            return new ApiResponseDTO(HttpStatus.OK.value(), ResponseConstants.LEAVE_UPDATED);
+        }
+        if (leaveTransactionUpdateDTO.getRemarks() != null && !leaveTransactionUpdateDTO.getRemarks().trim().isEmpty()) {
+            leaveTransaction.setRemarks(leaveTransactionUpdateDTO.getRemarks().trim());
+        }
+
+        leaveTransactionRepository.save(leaveTransaction);
+        return new ApiResponseDTO(HttpStatus.OK.value(), ResponseConstants.LEAVE_UPDATED);
     }
 
     @Override
-    public List<LeaveTransactionResponseDTO> getLeaveTransactionsListByUserId(Long userId) throws UserNotFoundException {
-        UserEntity user = leaveTransactionValidator.validateUser(userId);
+    public List<LeaveTransactionResponseWithoutWorkflowDTO> getLeaveTransactionsListByUserId(Long tenantId, Long userId, Long approverId) throws UserNotFoundException, InvalidDataException {
 
-        List<LeaveTransactionEntity> leaveTransactions = leaveTransactionRepository.findByUser(user);
-        return leaveTransactions.stream()
-                .map(leaveTransactionMapper::toResponseDTO)
-                .toList();
+        if (tenantId != null) {
+            TenantEntity tenant = leaveTransactionValidator.validateTenant(tenantId);
+            if (userId != null) {
+                UserEntity user = leaveTransactionValidator.validateUser(userId);
+
+                // Ensure the user belongs to the provided tenant
+                if (!user.getTenantEntity().getId().equals(tenantId)) {
+                    throw new UserNotFoundException("User does not belong to the given tenant");
+                }
+                List<LeaveTransactionEntity> leaveTransactions = leaveTransactionRepository.findByUser(user);
+                return leaveTransactions.stream()
+                        .map(leaveTransactionMapper::toResponseDTOWithoutWorkflow)
+                        .toList();
+            }
+
+            if (approverId != null) {
+                UserEntity approver = leaveTransactionValidator.validateUser(approverId);
+
+                // Ensure the approver belongs to the provided tenant
+                if (!approver.getTenantEntity().getId().equals(tenantId)) {
+                    throw new UserNotFoundException("Approver does not belong to the given tenant");
+                }
+
+                List<LeaveTransactionEntity> pendingLeaves = leaveTransactionRepository.findByApproveWorkflows_ApproverAndLeaveStatus(
+                        approver, EnumLeaveStatus.PENDING);
+
+                return pendingLeaves.stream()
+                        .map(leaveTransactionMapper::toResponseDTOWithoutWorkflow)
+                        .toList();
+            }
+
+        }
+        throw new InvalidDataException("Tenant ID is required");
     }
+
+
 }

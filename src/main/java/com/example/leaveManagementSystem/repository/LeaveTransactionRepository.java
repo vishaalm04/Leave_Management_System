@@ -19,4 +19,6 @@ public interface LeaveTransactionRepository extends JpaRepository<LeaveTransacti
 
     List<LeaveTransactionEntity> findByUser(UserEntity user);
 
+    List<LeaveTransactionEntity>findByApproveWorkflows_ApproverAndLeaveStatus(UserEntity approver,EnumLeaveStatus status);
+
 }

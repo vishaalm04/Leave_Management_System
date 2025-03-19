@@ -37,22 +37,20 @@ public class LeaveTransactionValidator {
     @Autowired
     private LeaveTransactionRepository leaveTransactionRepository;
 
+    //regex as a class-level constant
+    //private static final String DATE_REGEX = "^(?!0000)\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$";
 
-      //Validates if the user exists and is active.
-
+    //Validates if the user exists and is active.
     public UserEntity validateUser(Long userId) throws UserNotFoundException {
         return userRepository.findByIdAndStatus(userId, EnumStatus.ACTIVE)
                 .orElseThrow(() -> new UserNotFoundException(ResponseConstants.USER_NOT_FOUND + userId));
     }
 
-
-     // Validates if the tenant exists and is active.
-
+    // Validates if the tenant exists and is active.
     public TenantEntity validateTenant(Long tenantId) throws InvalidDataException {
         return tenantRepository.findByIdAndStatus(tenantId, EnumStatus.ACTIVE)
                 .orElseThrow(() -> new InvalidDataException(ResponseConstants.TENANT_NOT_FOUND + tenantId));
     }
-
 
     //Validates if the leave type exists and is active.
     public LeaveTypeEntity validateLeaveType(Long leaveTypeId) throws InvalidDataException {
@@ -60,14 +58,12 @@ public class LeaveTransactionValidator {
                 .orElseThrow(() -> new InvalidDataException(ResponseConstants.LEAVE_TYPE_NOT_FOUND + leaveTypeId));
     }
 
-
-     //Validates start and end dates (format and logical correctness).
-
+    //Validates start and end dates format.
     public void validateLeaveDates(String startDateStr, String endDateStr) throws InvalidDataException {
 
         if (startDateStr == null || startDateStr.trim().isEmpty() ||
                 endDateStr == null || endDateStr.trim().isEmpty()) {
-            throw new InvalidDataException("Start date and End date cannot be null or empty.");
+            throw new NullPointerException("Start date or End date cannot be null or empty.");
         }
 
         try {
@@ -84,29 +80,26 @@ public class LeaveTransactionValidator {
                 throw new InvalidDataException("Invalid start date: " + startDateStr + ". Past dates are not allowed.");
             }
 
-        } catch (DateTimeParseException e) {
+        } catch (DateTimeParseException ex) {
             throw new InvalidDataException("Invalid date format: Expected format is YYYY-MM-DD.");
         }
     }
-    private LocalDate parseValidDate(String dateStr) {
+
+    private LocalDate parseValidDate(String dateStr) throws InvalidDataException {
         try {
-            // Check if date contains invalid zero values like "2025-00-09" or "0000-01-03"
-            if (dateStr.matches(".*-00-.*") || dateStr.matches("0000-.*")) {
-                throw new IllegalArgumentException("Invalid date: " + dateStr + ". Month and day cannot be zero.");
-            }
             return LocalDate.parse(dateStr);
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Invalid date format: " + dateStr + ". Use YYYY-MM-DD.");
+            throw new InvalidDataException("Invalid date format: Expected format is YYYY-MM-DD.");
         }
     }
 
     //Validates if the leave being applied conflicts with any existing leave.
     public void validateDuplicateLeave(UserEntity user, LeaveTypeEntity leaveType,
                                        LocalDate startDate, EnumLeaveDuration startDateType,
-                                       LocalDate endDate, EnumLeaveDuration endDateType) {
+                                       LocalDate endDate, EnumLeaveDuration endDateType) throws InvalidDataException {
 
         if (startDate.equals(endDate) && startDateType != endDateType) {
-            throw new IllegalArgumentException("For the same start and end date, start date type and end date type must be the same.");
+            throw new InvalidDataException("For the same start and end date, start date type and end date type must be the same.");
         }
 
         List<LeaveTransactionEntity> conflictingLeaves = leaveTransactionRepository
@@ -152,6 +145,7 @@ public class LeaveTransactionValidator {
             }
         }
     }
+
     // Validates the leave duration values.
     public void validateLeaveDuration(String startDateType, String endDateType) throws InvalidDataException {
         try {

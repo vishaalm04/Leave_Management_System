@@ -21,7 +21,7 @@ public class LeaveTransactionRequestDTO {
     private  Long leaveTypeId;
 
     @NotNull(message = "Start date type is required")
-    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Start date must be in the format yyyy-MM-dd")
+//    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Start date must be in the format yyyy-MM-dd")
     private String startDate;
 
     @NotNull(message = "Start date type is required")
@@ -29,7 +29,7 @@ public class LeaveTransactionRequestDTO {
     private String appliedStartDateType;
 
     @NotNull(message = "End date is required")
-    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "End date must be in the format yyyy-MM-dd")
+//    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "End date must be in the format yyyy-MM-dd")
     private String endDate;
 
     @Pattern(regexp = "FULL_DAY|FIRST_HALF|SECOND_HALF", message = "Invalid leave duration type")

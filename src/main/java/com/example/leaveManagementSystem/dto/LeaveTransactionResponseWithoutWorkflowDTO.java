@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 
-public class LeaveTransactionResponseDTO {
+public class LeaveTransactionResponseWithoutWorkflowDTO {
 
     private Long id;
     private Long tenantId;
@@ -32,6 +32,6 @@ public class LeaveTransactionResponseDTO {
     private String createdAt;
     private String updatedBy;
     private String updatedAt;
-    private List<ApproveWorkflowResponseDTO> workflows;
+
 
 }

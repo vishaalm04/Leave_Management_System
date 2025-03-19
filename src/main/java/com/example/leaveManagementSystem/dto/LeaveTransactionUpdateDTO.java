@@ -30,4 +30,8 @@ public class LeaveTransactionUpdateDTO {
     private String appliedEndDateType;
 
     private String remarks;
+
+    private String leaveStatus;
+
+
 }

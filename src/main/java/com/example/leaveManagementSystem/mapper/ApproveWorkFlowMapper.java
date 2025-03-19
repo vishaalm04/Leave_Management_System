@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
 @Component
 public class ApproveWorkFlowMapper {
 
-    public ApproveWorkflowEntity toEntity(LeaveTransactionRequestDTO dto, LeaveTransactionEntity leaveTransactionEntity,
+    public ApproveWorkflowEntity toEntity(LeaveTransactionRequestDTO leaveTransactionRequestDTO, LeaveTransactionEntity leaveTransactionEntity,
                                           TenantEntity tenant, UserEntity approver) {
-        if (dto == null || leaveTransactionEntity == null || tenant == null || approver == null) {
+        if (leaveTransactionRequestDTO == null || leaveTransactionEntity == null || tenant == null || approver == null) {
             return null;
         }
 
@@ -25,10 +25,10 @@ public class ApproveWorkFlowMapper {
         entity.setLeaveTransactionId(leaveTransactionEntity);
         entity.setApprover(approver);
         entity.setWorkflowStatus(EnumWorkflowStatus.PENDING);
-        entity.setRemarks(dto.getRemarks());
-        entity.setCreatedBy(leaveTransactionEntity.getCreatedBy());
+        entity.setRemarks(leaveTransactionRequestDTO.getRemarks());
+        entity.setCreatedBy(approver.getName());
         entity.setCreatedAt(LocalDateTime.now());
-        entity.setUpdatedBy(leaveTransactionEntity.getCreatedBy());
+        entity.setUpdatedBy(approver.getName());
         entity.setUpdatedAt(LocalDateTime.now());
 
         return entity;
@@ -42,10 +42,15 @@ public class ApproveWorkFlowMapper {
                 .id(entity.getId())
                 .approverId(entity.getApprover().getId())
                 .approverName(entity.getApprover().getName())
+                .leaveTransactionId(entity.getLeaveTransactionId() != null ? entity.getLeaveTransactionId().getId() : null)
                 .workflowStatus(String.valueOf(entity.getWorkflowStatus()))
                 .remarks(entity.getRemarks())
                 .createdBy(entity.getCreatedBy())
                 .createdAt(String.valueOf(entity.getCreatedAt()))
+                .createdBy(entity.getCreatedBy())
+                .createdAt(String.valueOf(entity.getCreatedAt()))
+                .updatedBy(entity.getUpdatedBy())
+                .updatedAt(String.valueOf(entity.getUpdatedAt()))
                 .build();
     }
 
