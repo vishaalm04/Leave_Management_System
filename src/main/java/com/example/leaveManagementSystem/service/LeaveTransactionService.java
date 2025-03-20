@@ -16,6 +16,6 @@ public interface LeaveTransactionService {
 
     ApiResponseDTO updateLeave(LeaveTransactionUpdateDTO leaveTransactionUpdateDTO , Long userId, Long tenant_Id, Long transactionId) throws UserNotFoundException, InvalidDataException;
 
-    List<LeaveTransactionResponseWithoutWorkflowDTO> getLeaveTransactionsListByUserId(Long tenantId,Long userId, Long approverId) throws UserNotFoundException, InvalidDataException;
+    List<LeaveTransactionResponseWithoutWorkflowDTO> getLeaveTransactionsListByUserId(Long tenantId,Long userId, Long approverId,String search,List<String>statuses,String fromDate,String toDate,String sortBy,String sortOrder) throws UserNotFoundException, InvalidDataException;
 
 }

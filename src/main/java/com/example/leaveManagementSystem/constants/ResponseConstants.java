@@ -19,5 +19,6 @@ public class ResponseConstants {
 
     public static final String TRANSACTION_NOT_FOUND = "Leave transaction not found";
 
+    public static final String INVALID_FILTER_OPTION= "InValid Filter Option";
 
 }

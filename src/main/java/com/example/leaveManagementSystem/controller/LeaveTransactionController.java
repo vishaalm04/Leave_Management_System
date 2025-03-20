@@ -8,8 +8,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "leaveTransactionController", description = "Leave Request Api")
@@ -58,10 +60,19 @@ public class LeaveTransactionController {
     }
 
     @GetMapping("/list")
-    public List<LeaveTransactionResponseWithoutWorkflowDTO> getLeaveTransactionsListByUserId(@RequestHeader(required = true)Long tenantId,
-                                                                                             @RequestHeader(required = false) Long userId,
-                                                                                             @RequestHeader(required = false) Long approverId) throws UserNotFoundException, InvalidDataException {
-        return leaveTransactionService.getLeaveTransactionsListByUserId(tenantId,userId, approverId);
+    public List<LeaveTransactionResponseWithoutWorkflowDTO> getLeaveTransactionsListByUserId(
+            @RequestHeader(name = "tenantId", required = true) Long tenantId,
+            @RequestHeader(name = "userId", required = false) Long userId,
+            @RequestHeader(name = "approverId", required = false) Long approverId,
+            @RequestParam(name = "search", required = false) String search ,
+            @RequestParam(name = "statuses", required = false) List<String> statuses,
+            @RequestParam(name = "fromDate", required = false) String fromDate,
+            @RequestParam(name = "toDate", required = false) String toDate,
+            @RequestParam(name = "sortBy", required = false) String sortBy,
+            @RequestParam(name = "sortOrder", required = false) String sortOrder) throws UserNotFoundException, InvalidDataException {
+
+
+        return leaveTransactionService.getLeaveTransactionsListByUserId(tenantId,userId, approverId,search,statuses,fromDate,toDate,sortBy,sortOrder);
     }
 
 }

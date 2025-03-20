@@ -5,6 +5,7 @@ import com.example.leaveManagementSystem.entity.LeaveTypeEntity;
 import com.example.leaveManagementSystem.entity.UserEntity;
 import com.example.leaveManagementSystem.enumeration.EnumLeaveStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface LeaveTransactionRepository extends JpaRepository<LeaveTransactionEntity,Long> {
+public interface LeaveTransactionRepository extends JpaRepository<LeaveTransactionEntity,Long>, JpaSpecificationExecutor<LeaveTransactionEntity> {
 
     List<LeaveTransactionEntity> findByUserAndLeaveTypeAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
             UserEntity user, LeaveTypeEntity leaveType, LocalDate endDate, LocalDate startDate);

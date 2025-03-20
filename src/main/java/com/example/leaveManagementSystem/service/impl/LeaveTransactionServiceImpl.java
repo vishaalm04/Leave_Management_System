@@ -14,7 +14,9 @@ import com.example.leaveManagementSystem.repository.*;
 import com.example.leaveManagementSystem.service.EmailService;
 import com.example.leaveManagementSystem.service.LeaveTransactionService;
 import com.example.leaveManagementSystem.validation.LeaveTransactionValidator;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.example.leaveManagementSystem.repository.LeaveTransactionSpecification.*;
+import static javax.management.Query.and;
 
 
 @Service
@@ -210,42 +216,34 @@ public class LeaveTransactionServiceImpl implements LeaveTransactionService {
     }
 
     @Override
-    public List<LeaveTransactionResponseWithoutWorkflowDTO> getLeaveTransactionsListByUserId(Long tenantId, Long userId, Long approverId) throws UserNotFoundException, InvalidDataException {
+    public List<LeaveTransactionResponseWithoutWorkflowDTO> getLeaveTransactionsListByUserId(
+            Long tenantId, Long userId, Long approverId, String search,List<String>statuses,String fromDate,String toDate,String sortBy,String sortOrder) throws InvalidDataException {
 
-        if (tenantId != null) {
-            TenantEntity tenant = leaveTransactionValidator.validateTenant(tenantId);
-            if (userId != null) {
-                UserEntity user = leaveTransactionValidator.validateUser(userId);
+       if(statuses!=null && !statuses.isEmpty()){
+           for(String status :statuses){
+               try{
+                   EnumLeaveStatus.valueOf(status.toUpperCase());
+               }catch(IllegalArgumentException e){
+                   throw new InvalidDataException(ResponseConstants.INVALID_FILTER_OPTION);
+               }
+           }
+       }
+        Specification<LeaveTransactionEntity> specification =
+                LeaveTransactionSpecification.getFilteredTransactions(tenantId, userId, approverId, search,statuses,fromDate,toDate,sortBy,sortOrder);
 
-                // Ensure the user belongs to the provided tenant
-                if (!user.getTenantEntity().getId().equals(tenantId)) {
-                    throw new UserNotFoundException("User does not belong to the given tenant");
-                }
-                List<LeaveTransactionEntity> leaveTransactions = leaveTransactionRepository.findByUser(user);
-                return leaveTransactions.stream()
-                        .map(leaveTransactionMapper::toResponseDTOWithoutWorkflow)
-                        .toList();
-            }
+        // Fetch filtered records from DB
+        List<LeaveTransactionEntity> leaveTransactions = leaveTransactionRepository.findAll(specification);
 
-            if (approverId != null) {
-                UserEntity approver = leaveTransactionValidator.validateUser(approverId);
-
-                // Ensure the approver belongs to the provided tenant
-                if (!approver.getTenantEntity().getId().equals(tenantId)) {
-                    throw new UserNotFoundException("Approver does not belong to the given tenant");
-                }
-
-                List<LeaveTransactionEntity> pendingLeaves = leaveTransactionRepository.findByApproveWorkflows_ApproverAndLeaveStatus(
-                        approver, EnumLeaveStatus.PENDING);
-
-                return pendingLeaves.stream()
-                        .map(leaveTransactionMapper::toResponseDTOWithoutWorkflow)
-                        .toList();
-            }
-
-        }
-        throw new InvalidDataException("Tenant ID is required");
+        //entities to DTO using the mapper
+        return leaveTransactions.stream()
+                .map(leaveTransactionMapper::toResponseDTOWithoutWorkflow)
+                .collect(Collectors.toList());
     }
+
+
+
+
+
 
 
 }
